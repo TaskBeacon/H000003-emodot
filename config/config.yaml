@@ -1,0 +1,271 @@
+# ============================================================================
+# Base config (human run)
+# - Used by: python main.py
+# - Scope: human experiment only (no qa/sim section in this file)
+# ============================================================================
+
+# === Subject Form ===========================================================
+subinfo_fields:
+  - name: subject_id
+    type: int
+    constraints:
+      min: 101
+      max: 999
+      digits: 3
+  - name: subname
+    type: string
+  - name: age
+    type: int
+    constraints:
+      min: 5
+      max: 60
+  - name: gender
+    type: choice
+    choices:
+      - Male
+      - Female
+
+# === Subject Mapping ========================================================
+subinfo_mapping:
+  subject_id: 被试号
+  subname: 被试姓名(拼音)
+  age: 年龄
+  gender: 性别
+  Male: 男
+  Female: 女
+  registration_failed: 注册失败。
+  registration_successful: 注册成功！
+  invalid_input: 字段 {field} 输入无效
+
+# === Display / Window =======================================================
+window:
+  size:
+    - 1920
+    - 1080
+  units: deg
+  screen: 0
+  bg_color: black
+  fullscreen: true
+  fullscreen_lock_escape: true
+  monitor_width_cm: 59.7
+  monitor_distance_cm: 72
+
+# === Task ===================================================================
+task:
+  task_name: eeg_emodot_preview
+  save_path: ./outputs/web
+  language: Chinese
+  voice_name: zh-CN-YunyangNeural
+  voice_enabled: true
+  total_blocks: 1
+  total_trials: 20
+  trial_per_block: 20
+  conditions:
+    - PN_F_L
+    - PN_F_R
+    - NP_F_L
+    - NP_F_R
+    - SN_F_L
+    - SN_F_R
+    - NS_F_L
+    - NS_F_R
+    - PN_M_L
+    - PN_M_R
+    - NP_M_L
+    - NP_M_R
+    - SN_M_L
+    - SN_M_R
+    - NS_M_L
+    - NS_M_R
+    - NN_F_L
+    - NN_F_R
+    - NN_M_L
+    - NN_M_R
+  key_list:
+    - f
+    - j
+  left_key: f
+  right_key: j
+  delta: 0.0
+  seed_mode: same_across_sub
+  overall_seed: 2025
+  input_mode: keyboard
+  hide_cursor: true
+
+# === Stimuli ================================================================
+stimuli:
+  fixation:
+    type: text
+    text: "+"
+    color: white
+
+  left_stim:
+    type: image
+    image: assets/HF01.bmp
+    pos:
+      - -4.5
+      - 0
+    size:
+      - 4.5
+      - 5
+    units: deg
+
+  right_stim:
+    type: image
+    image: assets/HF02.bmp
+    pos:
+      - 4.5
+      - 0
+    size:
+      - 4.5
+      - 5
+    units: deg
+
+  left_target:
+    type: circle
+    radius: 1
+    pos:
+      - -4
+      - 0
+    color: white
+
+  right_target:
+    type: circle
+    radius: 1
+    pos:
+      - 4
+      - 0
+    color: white
+
+  block_break:
+    type: text
+    text: |
+      第 {block_num} / {total_blocks} 部分完成
+      击中率：{accuracy:.2f}
+
+      请在充分休息后按下空格键
+      进入下一个部分
+    color: white
+    height: 0.78
+
+  instruction_text:
+    type: textbox
+    text: |
+      【情绪点探测任务说明】
+
+      在本任务中，您将看到注视点和一对面孔图片。
+      随后会出现一个目标点。
+
+      如果目标点在左侧，请按【f】；
+      如果目标点在右侧，请按【j】。
+
+      请尽可能快速且准确作答。
+      准备好后，请按【空格键】开始任务。
+    color: white
+    font: SimHei
+    alignment: center
+    letterHeight: 0.78
+    units: deg
+    size:
+      - 20
+      - 5
+
+  instruction_text_voice:
+    type: sound
+    file: assets/instruction_text_voice.mp3
+
+  good_bye:
+    type: textbox
+    text: |
+      【任务结束】
+
+      感谢您的参与！
+      请按【空格键】退出任务。
+    color: white
+    font: SimHei
+    alignment: center
+    letterHeight: 0.78
+    units: deg
+    size:
+      - 20
+      - 5
+
+# === Timing =================================================================
+timing:
+  fixation_duration:
+    - 0.8
+    - 1.0
+  cue_duration: 0.5
+  interval_duration:
+    - 0.4
+    - 0.6
+  target_duration: 1.0
+
+# === Triggers ===============================================================
+triggers:
+  map:
+    exp_onset: 98
+    exp_end: 99
+    block_onset: 198
+    block_end: 199
+    fixation_onset: 10
+    key_press: 68
+    no_response: 69
+
+    PN_F_L_cue_onset: 12
+    PN_F_L_target_onset: 13
+    PN_F_R_cue_onset: 22
+    PN_F_R_target_onset: 23
+    NP_F_L_cue_onset: 32
+    NP_F_L_target_onset: 33
+    NP_F_R_cue_onset: 42
+    NP_F_R_target_onset: 43
+    SN_F_L_cue_onset: 52
+    SN_F_L_target_onset: 53
+    SN_F_R_cue_onset: 62
+    SN_F_R_target_onset: 63
+    NS_F_L_cue_onset: 72
+    NS_F_L_target_onset: 73
+    NS_F_R_cue_onset: 82
+    NS_F_R_target_onset: 83
+    PN_M_L_cue_onset: 92
+    PN_M_L_target_onset: 93
+    PN_M_R_cue_onset: 102
+    PN_M_R_target_onset: 103
+    NP_M_L_cue_onset: 112
+    NP_M_L_target_onset: 113
+    NP_M_R_cue_onset: 122
+    NP_M_R_target_onset: 123
+    SN_M_L_cue_onset: 132
+    SN_M_L_target_onset: 133
+    SN_M_R_cue_onset: 142
+    SN_M_R_target_onset: 143
+    NS_M_L_cue_onset: 152
+    NS_M_L_target_onset: 153
+    NS_M_R_cue_onset: 162
+    NS_M_R_target_onset: 163
+    NN_F_L_cue_onset: 172
+    NN_F_L_target_onset: 173
+    NN_F_R_cue_onset: 182
+    NN_F_R_target_onset: 183
+    NN_M_L_cue_onset: 192
+    NN_M_L_target_onset: 193
+    NN_M_R_cue_onset: 202
+    NN_M_R_target_onset: 203
+
+  driver:
+    type: serial_url
+    url: loop://
+    baudrate: 115200
+    timeout: 1
+    prefix:
+      - 1
+      - 225
+      - 1
+      - 0
+
+  policy:
+    strict: false
+
+  timing:
+    post_delay_s: 0.001

@@ -1,0 +1,14 @@
+id: H000003
+slug: emodot
+title: "Emotional Dot-Probe Task (EmoDot)"
+acquisition: behavior
+variant: html
+cognitive_domain:
+  - attention
+  - emotion
+maturity: prototype
+version:
+  release_tag: "0.1.0"
+contracts:
+  psyflow_web_taps: v0.1.0
+maintainer: []
