@@ -5,22 +5,20 @@ import {
   type TrialBuilder
 } from "psyflow-web";
 
-import { assign_stim_from_condition, type AssetPool } from "./utils";
+import type { EmodotTrialInfo } from "./utils";
 
 export function run_trial(
   trial: TrialBuilder,
-  condition: string,
+  trial_info: EmodotTrialInfo,
   context: {
     settings: TaskSettings;
     stimBank: StimBank;
-    asset_pool: AssetPool;
     block_id: string;
     block_idx: number;
   }
 ): TrialBuilder {
-  const { settings, stimBank, asset_pool, block_id, block_idx } = context;
-  const condition_id = String(condition);
-  const trial_info = assign_stim_from_condition(condition_id, asset_pool);
+  const { settings, stimBank, block_id, block_idx } = context;
+  const condition_id = String(trial_info.condition);
   const left_stim = stimBank.rebuild("left_stim", { image: trial_info.left_stim.url });
   const right_stim = stimBank.rebuild("right_stim", { image: trial_info.right_stim.url });
   const target_position = trial_info.target_position;
@@ -70,11 +68,27 @@ export function run_trial(
   });
   cuesUnit.show({ duration: Number(settings.cue_duration ?? 0.5) }).to_dict();
 
-  trial
-    .unit("interval")
-    .addStim(stimBank.get("fixation"))
-    .show({ duration: (settings.interval_duration as number | number[] | null | undefined) ?? null })
-    .to_dict();
+  const intervalUnit = trial.unit("interval").addStim(stimBank.get("fixation"));
+  set_trial_context(intervalUnit, {
+    trial_id: trial.trial_id,
+    phase: "inter_stimulus_interval",
+    deadline_s: (settings.interval_duration as number | number[] | null | undefined) ?? null,
+    valid_keys: [],
+    block_id,
+    condition_id,
+    task_factors: {
+      condition: condition_id,
+      stage: "inter_stimulus_interval",
+      target_position,
+      block_idx
+    },
+    stim_id: "fixation",
+    stim_features: {
+      left_asset: trial_info.left_stim.name,
+      right_asset: trial_info.right_stim.name
+    }
+  });
+  intervalUnit.show({ duration: (settings.interval_duration as number | number[] | null | undefined) ?? null }).to_dict();
 
   const targetStimId = `${target_position}_target`;
   const targetUnit = trial.unit("target").addStim(stimBank.get(targetStimId));
@@ -99,6 +113,8 @@ export function run_trial(
       keys: key_list,
       correct_keys: correct_key,
       duration: Number(settings.target_duration ?? 1),
+      response_trigger: Number((settings.triggers as Record<string, number> | undefined)?.key_press ?? 68),
+      timeout_trigger: Number((settings.triggers as Record<string, number> | undefined)?.no_response ?? 69),
       terminate_on_response: true
     })
     .to_dict();

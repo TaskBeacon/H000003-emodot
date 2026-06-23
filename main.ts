@@ -1,5 +1,4 @@
 import {
-  BlockUnit,
   StimBank,
   SubInfo,
   TaskSettings,
@@ -19,7 +18,13 @@ import {
 
 import configText from "./config/config.yaml?raw";
 import { run_trial } from "./src/run_trial";
-import { AssetPool, get_stim_list_from_assets, normalizeImportedAssets, summarizeBlock } from "./src/utils";
+import {
+  generate_emodot_conditions,
+  get_stim_list_from_assets,
+  normalizeImportedAssets,
+  resolve_canonical_block_seed,
+  summarizeBlock
+} from "./src/utils";
 
 declare global {
   interface ImportMeta {
@@ -86,10 +91,7 @@ export async function run(root: HTMLElement): Promise<void> {
     buildTrials: (): CompiledTrial[] => {
       reset_trial_counter();
 
-      const assetPool = new AssetPool(
-        get_stim_list_from_assets(faceAssets),
-        Number(settings.overall_seed ?? 2025)
-      );
+      const stimList = get_stim_list_from_assets(faceAssets);
       const compiledTrials: CompiledTrial[] = [];
       const instructionInputs: Array<Resolvable<StimRef | StimSpec | null>> = [stimBank.get("instruction_text")];
       if (settings.voice_enabled) {
@@ -118,24 +120,23 @@ export async function run(root: HTMLElement): Promise<void> {
           })
         );
 
-        const block = new BlockUnit({
-          block_id: blockId,
-          block_idx: blockIndex,
-          settings
-        }).generate_conditions();
+        const blockSeed = resolve_canonical_block_seed(settings, blockIndex);
+        const blockConditions = generate_emodot_conditions(Number(settings.trials_per_block ?? 60), settings.conditions, {
+          seed: blockSeed,
+          stim_list: stimList
+        });
 
-        block.conditions.forEach((condition, trialIndex) => {
+        blockConditions.forEach((trialInfo, trialIndex) => {
           const trial = new TrialBuilder({
             trial_id: next_trial_id(),
-            block_id: block.block_id,
+            block_id: blockId,
             trial_index: trialIndex,
-            condition
+            condition: trialInfo.condition
           });
-          run_trial(trial, condition, {
+          run_trial(trial, trialInfo, {
             settings,
             stimBank,
-            asset_pool: assetPool,
-            block_id: block.block_id,
+            block_id: blockId,
             block_idx: blockIndex
           });
           compiledTrials.push(trial.build());
@@ -146,13 +147,13 @@ export async function run(root: HTMLElement): Promise<void> {
             {
               trial_id: `block_break_${blockIndex}`,
               condition: "block_break",
-              trial_index: Number(block.conditions.length) + blockIndex
+              trial_index: Number(blockConditions.length) + blockIndex
             },
-            block.block_id,
+            blockId,
             "block_feedback",
             [
               (_snapshot: TrialSnapshot, runtime: RuntimeView) => {
-                const summary = summarizeBlock(runtime.getReducedRows(), block.block_id);
+                const summary = summarizeBlock(runtime.getReducedRows(), blockId);
                 return stimBank.get_and_format("block_break", {
                   block_num: blockIndex + 1,
                   total_blocks: settings.total_blocks,
